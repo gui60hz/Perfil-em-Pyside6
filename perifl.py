@@ -19,7 +19,6 @@ from PySide6.QtWidgets import (
     QPushButton
 )
 
-import qtawesome as qta
 
 
 # ============================================================
@@ -29,6 +28,10 @@ import qtawesome as qta
 PASTA_PROJETO = Path(__file__).resolve().parent
 
 CAMINHO_FOTO = PASTA_PROJETO / "assets" / "perfil.png"
+CAMINHO_LINKEDIN = PASTA_PROJETO / "assets" / "linkedin.png"
+CAMINHO_GITHUB = PASTA_PROJETO / "assets" / "github.png"
+CAMINHO_WHATSAPP = PASTA_PROJETO / "assets" / "whatsapp.png"
+CAMINHO_INSTAGRAM = PASTA_PROJETO / "assets" / "instagram.png"
 
 
 # ============================================================
@@ -37,7 +40,7 @@ CAMINHO_FOTO = PASTA_PROJETO / "assets" / "perfil.png"
 
 class LinkButton(QPushButton):
 
-    def __init__(self, texto, url, icone, cor_icone):
+    def __init__(self, texto, url, caminho_icone):
         super().__init__()
 
         self.url = url
@@ -50,10 +53,7 @@ class LinkButton(QPushButton):
         self.setFixedHeight(48)
 
         self.setIcon(
-            qta.icon(
-                icone,
-                color=cor_icone
-            )
+            QIcon(str(caminho_icone))
         )
 
         self.setIconSize(
@@ -341,8 +341,7 @@ class Perfil(QWidget):
         linkedin = LinkButton(
             "linkedin.com/in/joaoguilhermezmr",
             "https://www.linkedin.com/in/joaoguilhermezmr/",
-            "fa5b.linkedin",
-            "#0A66C2"
+            CAMINHO_LINKEDIN
         )
 
         # ====================================================
@@ -352,8 +351,7 @@ class Perfil(QWidget):
         github = LinkButton(
             "github.com/gui60hz",
             "https://github.com/gui60hz",
-            "fa5b.github",
-            "#ffffff"
+            CAMINHO_GITHUB
         )
 
         # ====================================================
@@ -363,8 +361,7 @@ class Perfil(QWidget):
         whatsapp = LinkButton(
             "(67) 99294-1206",
             "https://wa.me/5567992941206",
-            "fa5b.whatsapp",
-            "#25D366"
+            CAMINHO_WHATSAPP
         )
 
         # ====================================================
@@ -374,8 +371,7 @@ class Perfil(QWidget):
         instagram = LinkButton(
             "@jota.pxd",
             "https://www.instagram.com/jota.pxd",
-            "fa5b.instagram",
-            "#E1306C"
+            CAMINHO_INSTAGRAM
         )
 
         # ====================================================
