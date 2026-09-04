@@ -17,11 +17,6 @@ from PySide6.QtWidgets import (
     QFrame
 )
 
-
-# =========================================================
-# ITEM CLICÁVEL
-# =========================================================
-
 class LinkItem(QFrame):
 
     def __init__(self, icon_text, title, value, url):
@@ -37,7 +32,6 @@ class LinkItem(QFrame):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(14)
 
-        # Ícone
         self.icon_box = QLabel(icon_text)
 
         self.icon_box.setAlignment(Qt.AlignCenter)
@@ -45,17 +39,14 @@ class LinkItem(QFrame):
 
         self.icon_box.setObjectName("iconBox")
 
-        # Área dos textos
         text_layout = QVBoxLayout()
 
         text_layout.setContentsMargins(0, 0, 0, 0)
         text_layout.setSpacing(2)
 
-        # Título
         self.title_label = QLabel(title)
         self.title_label.setObjectName("itemTitle")
 
-        # Informação
         self.value_label = QLabel(value)
         self.value_label.setObjectName("itemValue")
 
@@ -67,7 +58,6 @@ class LinkItem(QFrame):
 
         layout.addStretch()
 
-    # Quando clicar no item
     def mousePressEvent(self, event):
 
         if event.button() == Qt.LeftButton:
@@ -77,11 +67,6 @@ class LinkItem(QFrame):
             )
 
         super().mousePressEvent(event)
-
-
-# =========================================================
-# FOTO CIRCULAR
-# =========================================================
 
 class AvatarWidget(QWidget):
 
@@ -111,7 +96,6 @@ class AvatarWidget(QWidget):
             QPainter.SmoothPixmapTransform
         )
 
-        # Cria o formato circular
         circulo = QPainterPath()
 
         circulo.addEllipse(
@@ -121,10 +105,8 @@ class AvatarWidget(QWidget):
             self.tamanho
         )
 
-        # Recorta a imagem no formato do círculo
         painter.setClipPath(circulo)
 
-        # Caso a imagem exista
         if not self.imagem.isNull():
 
             foto = self.imagem.scaled(
@@ -134,7 +116,6 @@ class AvatarWidget(QWidget):
                 Qt.SmoothTransformation
             )
 
-            # Centralização
             x = (
                 foto.width() - self.tamanho
             ) // 2
@@ -153,11 +134,6 @@ class AvatarWidget(QWidget):
                 self.tamanho
             )
 
-
-# =========================================================
-# JANELA
-# =========================================================
-
 class PerfilWindow(QWidget):
 
     def __init__(self):
@@ -173,13 +149,8 @@ class PerfilWindow(QWidget):
         self.setup_ui()
         self.apply_style()
 
-    # =====================================================
-    # INTERFACE
-    # =====================================================
-
     def setup_ui(self):
 
-        # Layout principal
         main_layout = QVBoxLayout(self)
 
         main_layout.setContentsMargins(
@@ -189,7 +160,6 @@ class PerfilWindow(QWidget):
             12
         )
 
-        # Card
         card = QFrame()
 
         card.setObjectName("card")
@@ -209,10 +179,6 @@ class PerfilWindow(QWidget):
             Qt.AlignTop
         )
 
-        # =================================================
-        # FOTO
-        # =================================================
-
         caminho_foto = (
             Path(__file__).parent
             / "foto_perfil.jpg"
@@ -230,10 +196,6 @@ class PerfilWindow(QWidget):
 
         card_layout.addSpacing(10)
 
-        # =================================================
-        # NOME
-        # =================================================
-
         nome = QLabel(
             "João Guilherme Zonfrilli"
         )
@@ -245,10 +207,6 @@ class PerfilWindow(QWidget):
         nome.setObjectName("nome")
 
         card_layout.addWidget(nome)
-
-        # =================================================
-        # USUÁRIO
-        # =================================================
 
         usuario = QLabel(
             "@joao.ramos"
@@ -263,10 +221,6 @@ class PerfilWindow(QWidget):
         )
 
         card_layout.addWidget(usuario)
-
-        # =================================================
-        # DESCRIÇÃO
-        # =================================================
 
         descricao = QLabel(
             "Desenvolvedor de Software • Python • PySide6"
@@ -288,9 +242,6 @@ class PerfilWindow(QWidget):
 
         card_layout.addSpacing(14)
 
-        # =================================================
-        # LINHA
-        # =================================================
 
         linha = QFrame()
 
@@ -308,20 +259,12 @@ class PerfilWindow(QWidget):
 
         card_layout.addSpacing(14)
 
-        # =================================================
-        # LINKEDIN
-        # =================================================
-
         linkedin = LinkItem(
             "in",
             "LinkedIn",
             "linkedin.com/in/joaoguilhermezmr",
             "https://www.linkedin.com/in/joaoguilhermezmr/"
         )
-
-        # =================================================
-        # GITHUB
-        # =================================================
 
         github = LinkItem(
             "</>",
@@ -330,9 +273,6 @@ class PerfilWindow(QWidget):
             "https://github.com/gui60hz"
         )
 
-        # =================================================
-        # WHATSAPP
-        # =================================================
 
         whatsapp = LinkItem(
             "☎",
@@ -341,10 +281,6 @@ class PerfilWindow(QWidget):
             "https://wa.me/5567992941206"
         )
 
-        # =================================================
-        # INSTAGRAM
-        # =================================================
-
         instagram = LinkItem(
             "◎",
             "Instagram",
@@ -352,7 +288,6 @@ class PerfilWindow(QWidget):
             "https://www.instagram.com/jota.pxd"
         )
 
-        # Adicionando os itens
         card_layout.addWidget(
             linkedin
         )
@@ -369,12 +304,7 @@ class PerfilWindow(QWidget):
             instagram
         )
 
-        # Adiciona card na janela
         main_layout.addWidget(card)
-
-    # =====================================================
-    # ESTILIZAÇÃO
-    # =====================================================
 
     def apply_style(self):
 
@@ -526,11 +456,6 @@ class PerfilWindow(QWidget):
             }
 
         """)
-
-
-# =========================================================
-# EXECUÇÃO
-# =========================================================
 
 if __name__ == "__main__":
 
