@@ -1,12 +1,13 @@
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import Qt, QUrl
+from PySide6.QtCore import Qt, QUrl, QSize
 from PySide6.QtGui import (
     QDesktopServices,
     QPixmap,
     QPainter,
-    QPainterPath
+    QPainterPath,
+    QIcon
 )
 from PySide6.QtWidgets import (
     QApplication,
@@ -14,225 +15,268 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QHBoxLayout,
     QLabel,
-    QFrame
+    QFrame,
+    QPushButton
 )
 
+import qtawesome as qta
 
-# =========================================================
-# ITEM CLICÁVEL
-# =========================================================
 
-class LinkItem(QFrame):
+# ============================================================
+# CAMINHOS
+# ============================================================
 
-    def __init__(self, icon_text, title, value, url):
+PASTA_PROJETO = Path(__file__).resolve().parent
+
+CAMINHO_FOTO = PASTA_PROJETO / "assets" / "perfil.png"
+
+
+# ============================================================
+# BOTÃO DOS LINKS
+# ============================================================
+
+class LinkButton(QPushButton):
+
+    def __init__(self, texto, url, icone, cor_icone):
         super().__init__()
 
         self.url = url
 
+        self.setText(texto)
+
+        # Mãozinha ao passar o mouse
         self.setCursor(Qt.PointingHandCursor)
-        self.setObjectName("linkItem")
 
-        layout = QHBoxLayout(self)
+        self.setFixedHeight(48)
 
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(14)
-
-        # Ícone
-        self.icon_box = QLabel(icon_text)
-
-        self.icon_box.setAlignment(Qt.AlignCenter)
-        self.icon_box.setFixedSize(42, 42)
-
-        self.icon_box.setObjectName("iconBox")
-
-        # Área dos textos
-        text_layout = QVBoxLayout()
-
-        text_layout.setContentsMargins(0, 0, 0, 0)
-        text_layout.setSpacing(2)
-
-        # Título
-        self.title_label = QLabel(title)
-        self.title_label.setObjectName("itemTitle")
-
-        # Informação
-        self.value_label = QLabel(value)
-        self.value_label.setObjectName("itemValue")
-
-        text_layout.addWidget(self.title_label)
-        text_layout.addWidget(self.value_label)
-
-        layout.addWidget(self.icon_box)
-        layout.addLayout(text_layout)
-
-        layout.addStretch()
-
-    # Quando clicar no item
-    def mousePressEvent(self, event):
-
-        if event.button() == Qt.LeftButton:
-
-            QDesktopServices.openUrl(
-                QUrl(self.url)
+        self.setIcon(
+            qta.icon(
+                icone,
+                color=cor_icone
             )
-
-        super().mousePressEvent(event)
-
-
-# =========================================================
-# FOTO CIRCULAR
-# =========================================================
-
-class AvatarWidget(QWidget):
-
-    def __init__(self, caminho_imagem, tamanho=150):
-        super().__init__()
-
-        self.tamanho = tamanho
-
-        self.imagem = QPixmap(
-            str(caminho_imagem)
         )
 
-        self.setFixedSize(
-            tamanho,
-            tamanho
+        self.setIconSize(
+            QSize(25, 25)
         )
 
-    def paintEvent(self, event):
+        self.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                color: #d2d2da;
 
-        painter = QPainter(self)
+                border: none;
 
-        painter.setRenderHint(
-            QPainter.Antialiasing
+                font-size: 13px;
+
+                text-align: left;
+
+                padding: 5px 10px;
+            }
+
+            QPushButton:hover {
+                background-color: #363641;
+
+                color: white;
+
+                border-radius: 8px;
+            }
+        """)
+
+        self.clicked.connect(self.abrir_link)
+
+    def abrir_link(self):
+
+        QDesktopServices.openUrl(
+            QUrl(self.url)
         )
 
-        painter.setRenderHint(
-            QPainter.SmoothPixmapTransform
-        )
 
-        # Cria o formato circular
-        circulo = QPainterPath()
-
-        circulo.addEllipse(
-            0,
-            0,
-            self.tamanho,
-            self.tamanho
-        )
-
-        # Recorta a imagem no formato do círculo
-        painter.setClipPath(circulo)
-
-        # Caso a imagem exista
-        if not self.imagem.isNull():
-
-            foto = self.imagem.scaled(
-                self.tamanho,
-                self.tamanho,
-                Qt.KeepAspectRatioByExpanding,
-                Qt.SmoothTransformation
-            )
-
-            # Centralização
-            x = (
-                foto.width() - self.tamanho
-            ) // 2
-
-            y = (
-                foto.height() - self.tamanho
-            ) // 2
-
-            painter.drawPixmap(
-                0,
-                0,
-                foto,
-                x,
-                y,
-                self.tamanho,
-                self.tamanho
-            )
-
-
-# =========================================================
+# ============================================================
 # JANELA
-# =========================================================
+# ============================================================
 
-class PerfilWindow(QWidget):
+class Perfil(QWidget):
 
     def __init__(self):
         super().__init__()
 
+        self.configurar_janela()
+        self.criar_interface()
+
+    # ========================================================
+    # JANELA
+    # ========================================================
+
+    def configurar_janela(self):
+
         self.setWindowTitle("Perfil")
 
-        self.resize(
-            560,
-            720
+        self.setFixedSize(
+            500,
+            650
         )
 
-        self.setup_ui()
-        self.apply_style()
+        # FOTO COMO ÍCONE DA JANELA
+        self.setWindowIcon(
+            QIcon(str(CAMINHO_FOTO))
+        )
 
-    # =====================================================
+        # REMOVE O FUNDO BRANCO
+        self.setStyleSheet("""
+            QWidget {
+                background-color: #202028;
+            }
+        """)
+
+    # ========================================================
     # INTERFACE
-    # =====================================================
+    # ========================================================
 
-    def setup_ui(self):
+    def criar_interface(self):
 
-        # Layout principal
-        main_layout = QVBoxLayout(self)
+        layout_principal = QVBoxLayout(self)
 
-        main_layout.setContentsMargins(
-            12,
-            12,
-            12,
-            12
+        layout_principal.setContentsMargins(
+            0,
+            0,
+            0,
+            0
         )
 
-        # Card
+        layout_principal.setAlignment(
+            Qt.AlignCenter
+        )
+
+        # ====================================================
+        # CARD
+        # ====================================================
+
         card = QFrame()
+
+        card.setFixedSize(
+            400,
+            580
+        )
 
         card.setObjectName("card")
 
-        card_layout = QVBoxLayout(card)
+        card.setStyleSheet("""
+            QFrame#card {
+                background-color: #292934;
 
-        card_layout.setContentsMargins(
-            48,
-            40,
-            48,
-            38
+                border-radius: 10px;
+            }
+        """)
+
+        layout_card = QVBoxLayout(card)
+
+        layout_card.setContentsMargins(
+            45,
+            25,
+            45,
+            30
         )
 
-        card_layout.setSpacing(12)
+        layout_card.setSpacing(5)
 
-        card_layout.setAlignment(
+        layout_card.setAlignment(
             Qt.AlignTop
         )
 
-        # =================================================
+        # ====================================================
+        # FOTO DE PERFIL
+        # ====================================================
+
+        area_foto = QWidget()
+
+        area_foto.setFixedHeight(160)
+
+        area_foto.setStyleSheet("""
+            background-color: transparent;
+        """)
+
+        layout_foto = QHBoxLayout(area_foto)
+
+        layout_foto.setAlignment(
+            Qt.AlignCenter
+        )
+
+        layout_foto.setSpacing(15)
+
+        # ----------------------------------------------------
+        # PARÊNTESE ESQUERDO
+        # ----------------------------------------------------
+
+        esquerda = QLabel("(")
+
+        esquerda.setStyleSheet("""
+            QLabel {
+                color: #637fd2;
+
+                font-size: 120px;
+
+                background-color: transparent;
+            }
+        """)
+
+        # ----------------------------------------------------
         # FOTO
-        # =================================================
+        # ----------------------------------------------------
 
-        caminho_foto = (
-            Path(__file__).parent
-            / "foto_perfil.jpg"
+        foto = QLabel()
+
+        foto.setFixedSize(
+            115,
+            115
         )
 
-        avatar = AvatarWidget(
-            caminho_foto,
-            150
+        foto.setAlignment(
+            Qt.AlignCenter
         )
 
-        card_layout.addWidget(
-            avatar,
-            alignment=Qt.AlignCenter
+        foto.setStyleSheet("""
+            QLabel {
+                background-color: transparent;
+            }
+        """)
+
+        pixmap_foto = QPixmap(str(CAMINHO_FOTO))
+
+        pixmap_foto = pixmap_foto.scaled(
+            115,
+            115,
+            Qt.KeepAspectRatioByExpanding,
+            Qt.SmoothTransformation
         )
 
-        card_layout.addSpacing(10)
+        foto.setPixmap(pixmap_foto)
 
-        # =================================================
+        # ----------------------------------------------------
+        # PARÊNTESE DIREITO
+        # ----------------------------------------------------
+
+        direita = QLabel(")")
+
+        direita.setStyleSheet("""
+            QLabel {
+                color: #637fd2;
+
+                font-size: 120px;
+
+                background-color: transparent;
+            }
+        """)
+
+        layout_foto.addWidget(esquerda)
+
+        layout_foto.addWidget(foto)
+
+        layout_foto.addWidget(direita)
+
+        # ====================================================
         # NOME
-        # =================================================
+        # ====================================================
 
         nome = QLabel(
             "João Guilherme Zonfrilli"
@@ -242,31 +286,21 @@ class PerfilWindow(QWidget):
             Qt.AlignCenter
         )
 
-        nome.setObjectName("nome")
+        nome.setStyleSheet("""
+            QLabel {
+                color: #6599e8;
 
-        card_layout.addWidget(nome)
+                font-size: 21px;
 
-        # =================================================
-        # USUÁRIO
-        # =================================================
+                font-weight: bold;
 
-        usuario = QLabel(
-            "@joao.ramos"
-        )
+                background-color: transparent;
+            }
+        """)
 
-        usuario.setAlignment(
-            Qt.AlignCenter
-        )
-
-        usuario.setObjectName(
-            "usuario"
-        )
-
-        card_layout.addWidget(usuario)
-
-        # =================================================
+        # ====================================================
         # DESCRIÇÃO
-        # =================================================
+        # ====================================================
 
         descricao = QLabel(
             "Desenvolvedor de Software • Python • PySide6"
@@ -278,268 +312,176 @@ class PerfilWindow(QWidget):
 
         descricao.setWordWrap(True)
 
-        descricao.setObjectName(
-            "descricao"
-        )
-
-        card_layout.addWidget(
-            descricao
-        )
-
-        card_layout.addSpacing(14)
-
-        # =================================================
-        # LINHA
-        # =================================================
-
-        linha = QFrame()
-
-        linha.setFrameShape(
-            QFrame.HLine
-        )
-
-        linha.setObjectName(
-            "linha"
-        )
-
-        card_layout.addWidget(
-            linha
-        )
-
-        card_layout.addSpacing(14)
-
-        # =================================================
-        # LINKEDIN
-        # =================================================
-
-        linkedin = LinkItem(
-            "in",
-            "LinkedIn",
-            "linkedin.com/in/joaoguilhermezmr",
-            "https://www.linkedin.com/in/joaoguilhermezmr/"
-        )
-
-        # =================================================
-        # GITHUB
-        # =================================================
-
-        github = LinkItem(
-            "</>",
-            "GitHub",
-            "github.com/gui60hz",
-            "https://github.com/gui60hz"
-        )
-
-        # =================================================
-        # WHATSAPP
-        # =================================================
-
-        whatsapp = LinkItem(
-            "☎",
-            "WhatsApp",
-            "(67) 99294-1206",
-            "https://wa.me/5567992941206"
-        )
-
-        # =================================================
-        # INSTAGRAM
-        # =================================================
-
-        instagram = LinkItem(
-            "◎",
-            "Instagram",
-            "@jota.pxd",
-            "https://www.instagram.com/jota.pxd"
-        )
-
-        # Adicionando os itens
-        card_layout.addWidget(
-            linkedin
-        )
-
-        card_layout.addWidget(
-            github
-        )
-
-        card_layout.addWidget(
-            whatsapp
-        )
-
-        card_layout.addWidget(
-            instagram
-        )
-
-        # Adiciona card na janela
-        main_layout.addWidget(card)
-
-    # =====================================================
-    # ESTILIZAÇÃO
-    # =====================================================
-
-    def apply_style(self):
-
-        self.setStyleSheet("""
-
-            QWidget {
-
-                background-color: #0f172a;
-
-                color: white;
-
-                font-family: "Segoe UI";
-
-            }
-
-
-            /* CARD */
-
-            #card {
-
-                background-color: #1b2940;
-
-                border: 1px solid #274266;
-
-                border-radius: 22px;
-
-            }
-
-
-            /* NOME */
-
-            #nome {
-
-                color: #66ebff;
-
-                font-size: 24px;
-
-                font-weight: 700;
-
-                background: transparent;
-
-            }
-
-
-            /* USUÁRIO */
-
-            #usuario {
-
-                color: #a7b6cc;
-
-                font-size: 14px;
-
-                background: transparent;
-
-            }
-
-
-            /* DESCRIÇÃO */
-
-            #descricao {
-
-                color: #f2f5f9;
-
-                font-size: 14px;
-
-                background: transparent;
-
-            }
-
-
-            /* LINHA */
-
-            #linha {
-
-                color: #314760;
-
-                background-color: #314760;
-
-                max-height: 1px;
-
-                border: none;
-
-            }
-
-
-            /* ITEM CLICÁVEL */
-
-            #linkItem {
+        descricao.setStyleSheet("""
+            QLabel {
+                color: #c2c2ca;
+
+                font-size: 11px;
 
                 background-color: transparent;
-
-                border-radius: 12px;
-
-                padding: 6px;
-
             }
-
-
-            #linkItem:hover {
-
-                background-color:
-                    rgba(255, 255, 255, 0.04);
-
-            }
-
-
-            /* ÍCONE */
-
-            #iconBox {
-
-                background-color: #334763;
-
-                color: #59d7ff;
-
-                border-radius: 10px;
-
-                font-size: 18px;
-
-                font-weight: bold;
-
-            }
-
-
-            /* TÍTULO */
-
-            #itemTitle {
-
-                color: #aebad0;
-
-                font-size: 14px;
-
-                background: transparent;
-
-            }
-
-
-            /* LINK */
-
-            #itemValue {
-
-                color: #ffffff;
-
-                font-size: 15px;
-
-                font-weight: 600;
-
-                background: transparent;
-
-            }
-
         """)
 
+        # ====================================================
+        # ESPAÇO
+        # ====================================================
 
-# =========================================================
-# EXECUÇÃO
-# =========================================================
+        espaco = QWidget()
+
+        espaco.setFixedHeight(15)
+
+        espaco.setStyleSheet("""
+            background-color: transparent;
+        """)
+
+        # ====================================================
+        # LINKEDIN
+        # ====================================================
+
+        linkedin = LinkButton(
+            "linkedin.com/in/joaoguilhermezmr",
+            "https://www.linkedin.com/in/joaoguilhermezmr/",
+            "fa5b.linkedin",
+            "#0A66C2"
+        )
+
+        # ====================================================
+        # GITHUB
+        # ====================================================
+
+        github = LinkButton(
+            "github.com/gui60hz",
+            "https://github.com/gui60hz",
+            "fa5b.github",
+            "#ffffff"
+        )
+
+        # ====================================================
+        # WHATSAPP
+        # ====================================================
+
+        whatsapp = LinkButton(
+            "(67) 99294-1206",
+            "https://wa.me/5567992941206",
+            "fa5b.whatsapp",
+            "#25D366"
+        )
+
+        # ====================================================
+        # INSTAGRAM
+        # ====================================================
+
+        instagram = LinkButton(
+            "@jota.pxd",
+            "https://www.instagram.com/jota.pxd",
+            "fa5b.instagram",
+            "#E1306C"
+        )
+
+        # ====================================================
+        # ADICIONAR AO CARD
+        # ====================================================
+
+        layout_card.addWidget(area_foto)
+
+        layout_card.addWidget(nome)
+
+        layout_card.addWidget(descricao)
+
+        layout_card.addWidget(espaco)
+
+        layout_card.addWidget(linkedin)
+
+        layout_card.addWidget(github)
+
+        layout_card.addWidget(whatsapp)
+
+        layout_card.addWidget(instagram)
+
+        layout_principal.addWidget(card)
+
+    # ========================================================
+    # FOTO CIRCULAR
+    # ========================================================
+
+    def criar_foto_circular(self, caminho, tamanho):
+
+        caminho = str(caminho)
+
+        pixmap_original = QPixmap(caminho)
+
+        # Verifica se encontrou a foto
+        if pixmap_original.isNull():
+
+            print("ERRO: Foto não encontrada!")
+
+            print("O programa procurou aqui:")
+
+            print(caminho)
+
+            return QPixmap()
+
+        pixmap_original = pixmap_original.scaled(
+            tamanho,
+            tamanho,
+            Qt.KeepAspectRatioByExpanding,
+            Qt.SmoothTransformation
+        )
+
+        resultado = QPixmap(
+            tamanho,
+            tamanho
+        )
+
+        resultado.fill(
+            Qt.transparent
+        )
+
+        painter = QPainter(resultado)
+
+        painter.setRenderHint(
+            QPainter.Antialiasing
+        )
+
+        caminho_circular = QPainterPath()
+
+        caminho_circular.addEllipse(
+            0,
+            0,
+            tamanho,
+            tamanho
+        )
+
+        painter.setClipPath(
+            caminho_circular
+        )
+
+        painter.drawPixmap(
+            0,
+            0,
+            pixmap_original
+        )
+
+        painter.end()
+
+        return resultado
+
+
+# ============================================================
+# EXECUTAR
+# ============================================================
 
 if __name__ == "__main__":
 
     app = QApplication(sys.argv)
 
-    window = PerfilWindow()
-
-    window.show()
-
-    sys.exit(
-        app.exec()
+    # ÍCONE TAMBÉM DEFINIDO PARA O APLICATIVO
+    app.setWindowIcon(
+        QIcon(str(CAMINHO_FOTO))
     )
+
+    janela = Perfil()
+
+    janela.show()
+
+    sys.exit(app.exec())
